@@ -169,10 +169,10 @@ void payment() {            //function for payment section
         cout << "*************** \n\n";
 
         cout << "Your order: \n";
-        for (int i = 0; i < orders.size(); i++) {
+        for (int i = 0; i < orders.size(); i++) {           //displays the users order
             cout << orders[i].quantity << "X " << orders[i].item << endl;
         }
-        cout << "Total cost: \t \t" << total << endl;
+        cout << "Total cost: \t \t" << total << endl;           // total displays the total cost of the order
 
         cout << "[1] Enter discount code \n";
         cout << "[2] Pay with cash \n";
@@ -184,10 +184,9 @@ void payment() {            //function for payment section
         switch (choice)
         {
         case 1:
-            cout << "Use discount code YouGetAnA+ for 15% off your order! \n";
+            cout << "Use discount code YouGetAnA+ for 5% off your order! \n";
             cout << "Please enter your discount code: \n";
-            cin >> discount;
-            discountSearch();
+            discountSearch(double& total);
             break;
 
         case 2:
@@ -379,7 +378,7 @@ void comboMenu(CurrentOrder& order)
         cout << "[" << i + 1 << "] " << comboNames[i] << "\t\t$" << setfill('0') << fixed << setprecision(2) << comboPrices[i] << endl;
     }
     cout << "[4] Return to Menu" << endl;
-    cout << "[5] Cancel\n" << endl;
+    cout << "[5] Exit\n" << endl;
 
     cout << "Please choose an option: ";
     cin >> choice;
@@ -408,26 +407,31 @@ void comboMenu(CurrentOrder& order)
         break;
 
     case 4:
-        //back to menu
-        //menu function here
+        displayMenu(order);
         break;
 
     case 5:
-        //cancel or exit?
-        //where to go from here?
+        exit(0);
+        break;
 
     default:
         cout << "Invalid choice, Please try again.\n";
         break;
+    }
+
+    if (choice >= 1 && choice <= 6)                                                    
+    {
+        cout << "Please enter quantity: ";
+        cin >> order.quantity;                                                         
+        order.cost *= order.quantity;                                                 
     }
 }
 
 //Admin functions defined:
 void adminPullUserInfo() {
     // when admin logs in
-
-    ifstream users("users.txt");
-    ifstream orders("order.txt");
+    ifstream orders("order.txt"); //opens the order.txt file to read from
+    ifstream users("users.txt"); //opens the users.txt file to read from.
     string line;
     string fname, lname, username, password;
     int roomNum;
@@ -441,7 +445,6 @@ void adminPullUserInfo() {
             user.fname = fname;
             user.lastName = lname;
             user.roomNum = roomNum;
-            ifstream orders("order.txt");
             if (orders.is_open()) { // check if open
                 // pulling that users last order from orders.txt
                 while (getline(orders, line)) { // read line by line
@@ -467,6 +470,7 @@ void adminPullUserInfo() {
         }
     }
     users.close();
+    orders.close();
 }
 
 void adminMainScreen() {
@@ -509,7 +513,7 @@ void adminMainScreen() {
 void adminReviewOrders() {
     cin.ignore(); //used to clear input stream for following getline code.
     
-    system("cls"); //clears screen
+    system("cls"); //clears screen to make the console easier to read
     printHeading();//prints main heading
 
     cout << "Review Orders" << endl;
@@ -519,21 +523,21 @@ void adminReviewOrders() {
     int count = 0;
     for (int i = 0; i < userList.size(); i++) {
         
-        if (userList[i].lastOrder.pastOrderItems.size() > 0) {
+        if (userList[i].lastOrder.pastOrderItems.size() > 0) { //if users are found with a past order, then they are printed.
             cout << userList[i].fname << " " << userList[i].lastName << ", class " << userList[i].roomNum << endl;
             count++;
         }
     }
-    if (count == 0) {
+    if (count == 0) { //if no users are found with a past order, than app tells admin, then returns to main menu.
         cout << "No users with orders found, returning you to the main menu" << endl << endl;
         system("pause");
         adminMainScreen();
     }
     cout << endl << endl << "Enter 1 to review a users order or 2 to go back to main menu: ";
 
-    string choice;
-    
-    getline(cin, choice);
+    string choice; //choice is set to a string due to bug found when using an int variable. The app would go in an infinite loop if a name was accidently
+                   // put in this input.
+    getline(cin, choice); //getline is used as well to fix the bug mentioned above.
 
     while (choice == "1" || choice == "2") {
         if (choice == "1") {
@@ -551,10 +555,11 @@ void adminReviewOrders() {
                     cout << "Order for " << userList[i].fname << " " << userList[i].lastName << endl;
                     cout << "Class: " << userList[i].roomNum << endl << endl;
                     for (int j = 0; j < userList[i].lastOrder.pastOrderItems.size(); j++) { // loop through chosen users last order items
-                        cout << userList[i].lastOrder.pastOrderItems[j] << endl; // print order items
+                        cout << userList[i].lastOrder.pastOrderItems[j] << endl; // prints order items
                     }
-                    cout << "Total: $" << userList[i].lastOrder.cost << endl;
-                    cout << "Payment Method: " << userList[i].lastOrder.paymentMethod << endl << endl; // print payment method  
+                    cout << "Total: $" << userList[i].lastOrder.cost << endl; //prints total.
+                    cout << "Payment Method: " << userList[i].lastOrder.paymentMethod << endl << endl; // prints payment method
+
                     // review another order or go back to main menu
                     int option = NULL;
                     while (option != 1 && option != 2) {
@@ -587,7 +592,7 @@ void adminReviewOrders() {
 
 void adminAddUsers() {
     string temp;
-    struct NewUser {
+    struct NewUser { //struct to store new user information.
         string username;
         string password;
         string fName;
@@ -595,12 +600,12 @@ void adminAddUsers() {
         string classNum;
     };
 
-    vector <NewUser> usersToApprove;
+    vector <NewUser> usersToApprove; //vector which uses NewUser struct.
 
-    ifstream newUserFile("newUsers.txt");
+    ifstream newUserFile("newUsers.txt"); //opens newUsers.txt file and reads from it.
     string u, p, f, l, c;
 
-    system("cls");
+    system("cls"); //clears screen.
 
     if (newUserFile.is_open()) {
 
@@ -747,7 +752,7 @@ void adminEditUsers() {
     getline(cin, temp);
     string first, last;
 
-    ofstream file("users.txt", ios::app);
+    ofstream file("users.txt", ios::app); //opens user.txt file to write to it.
 
     while (temp != "1") {
 
@@ -774,7 +779,7 @@ void adminEditUsers() {
                 cin >> option1;
                 string tempUserName, tempPassword, tempLName;
                 int tempClassNum;
-                switch (option1) {
+                switch (option1) { //switch case for the different options that admin can choose from.
                 case 1:
                     cout << "Enter new username: ";
                     cin >> tempUserName;
@@ -827,9 +832,7 @@ void adminEditUsers() {
         adminSaveUsersToFile();
 
         adminMainScreen();
-
     }
-
 }
 
 void adminRemoveUsers() {
@@ -899,6 +902,7 @@ void adminRemoveUsers() {
 }
 
 void printHeading() {
+    cout << endl;
     cout << "****************************" << endl;
     cout << "SCHOOL LUNCH ORDERING SYSTEM" << endl;
     cout << "****************************" << endl << endl;
@@ -975,7 +979,7 @@ void displayMenu(CurrentOrder& order)                           // The displayMe
         break;
 
     case 7:                                                                            // If option 7 is selected, it will call the comboMenu() function to display the combo options
-        comboMenu();
+        comboMenu(order);
         break;
 
     case 8:                                                                            // If option 8 is selected by the user,  it will exit out of the food menu
