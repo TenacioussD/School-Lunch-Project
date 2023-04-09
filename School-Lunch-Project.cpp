@@ -74,7 +74,7 @@ void successfulLogin();
 void login();
 void adminLogin();
 // Payment function prototypes
-void discountSearch();
+void discountSearch(double& total);
 void payment();
 
 int main()
@@ -121,33 +121,42 @@ int main()
 }
 
 //Payment functions defined:
-void discountSearch()           //Function to search file for vaild discount code
+void discountSearch(double& total)           //Function to search file for valid discount code
 {
-    string discount;
-    ifstream infile("discountCodes.txt");
-    if (infile)
-    {
-        string line;
+    string discount;
+    ifstream infile("discountCodes.txt");
+    bool found = false; // variable to check if valid code is found
+    static bool discountApplied = false; // Variable to track if code already applied
 
-        while (getline(infile, line))
-        {
-            if (line.find(discount) != string::npos)
-            {
-                found = true;
-                // Code to apply discount goes here, Waiting on orderTotal function.
-                cout << "A 15% discount has been applied to your order!\n\n";
-                break;
-            }
-        }
+    if (infile) {
+        string line;
+        cin >> discount;
 
-        infile.close();
-    }
+        while (getline(infile, line)) {
+            if (line.find(discount) != string::npos) {
+                if (!discountApplied) { // check if a discount has already been applied
+                    double discountAmount = total * 0.05;
+                    total -= discountAmount;
+                    cout << "A 5% discount has been applied to your order!\n\n";
+                    discountApplied = true;
+                }
+                else {
+                    cout << "Discount code already applied to this order!\n\n";
+                }
+                found = true;
+                break;
+            }
+        }
 
-    if (!found)
-    {
-        cout << "Invalid discount code, Please try again.\n\n";
-    }
+        infile.close();
+    }
+
+    if (!found) {
+        cout << "Invalid discount code, Please try again.\n\n";
+    }
+    orders.push_back(total);
 }
+
 void payment() {            //function for payment section
     string discount;
     string cardNumber;
@@ -205,6 +214,7 @@ void payment() {            //function for payment section
         }
     } while (choice != 3);
 }
+
 //signup-login functions defined:
 void createAccount()            //function to create a new account
 {
